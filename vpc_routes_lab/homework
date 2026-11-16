@@ -1,99 +1,87 @@
-Step 0: Set the region
+aws sts get-caller-identity
 export AWS_DEFAULT_REGION=us-east-1
---------------------------------------------------
-Step 1: Create the VPC
-VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 \
-    --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=i27corehr-vpc}]' \
-    --query 'Vpc.VpcId' --output text)
+aws configure set cli_pager ""
+
+1. VPC_ID
+
+VPC_ID=$(aws ec2 create-vpc --region us-east-1 --cidr-block 10.0.0.0/16 \
+    --tag-specifications "ResourceType=vpc,Tags=[{Key=Name,Value=i27corehr-vpc},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Vpc.VpcId --output text)
   echo $VPC_ID
+  
+---------------------------------------------------
 
-----------------------------------------------------
+2. Subnets (2 public, 2 app, 2 db)
 
-  Step 2: Create the 6 subnets
-  PUB1=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --availability-zone us-east-1a \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-1}]' \
-    --query 'Subnet.SubnetId' --output text)
+PUB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --availability-zone us-east-1a \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
-  PUB2=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.2.0/24 --availability-zone us-east-1b \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-2}]' \
-    --query 'Subnet.SubnetId' --output text)
+  PUB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.2.0/24 --availability-zone us-east-1b \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
-  APP1=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.11.0/24 --availability-zone us-east-1a \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-1}]' \
-    --query 'Subnet.SubnetId' --output text)
+  APP1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.11.0/24 --availability-zone us-east-1a \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
-  APP2=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.12.0/24 --availability-zone us-east-1b \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-2}]' \
-    --query 'Subnet.SubnetId' --output text)
+  APP2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.12.0/24 --availability-zone us-east-1b \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
-  DB1=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.21.0/24 --availability-zone us-east-1a \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-1}]' \
-    --query 'Subnet.SubnetId' --output text)
+  DB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.21.0/24 --availability-zone us-east-1a \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
-  DB2=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.22.0/24 --availability-zone us-east-1b \
-    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-2}]' \
-    --query 'Subnet.SubnetId' --output text)
+  DB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.22.0/24 --availability-zone us-east-1b \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query Subnet.SubnetId --output text)
   
   echo $PUB1 $PUB2 $APP1 $APP2 $DB1 $DB2
 
-  -------------------------------------------
+  --------------------------------------------------
+  3. Internet gateway (create and attach)
 
-  Step 3: Create and attach the internet gateway
-
-  IGW_ID=$(aws ec2 create-internet-gateway \
-    --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=i27corehr-igw}]' \
-    --query 'InternetGateway.InternetGatewayId' --output text)
+  IGW_ID=$(aws ec2 create-internet-gateway --region us-east-1 \
+    --tag-specifications "ResourceType=internet-gateway,Tags=[{Key=Name,Value=i27corehr-igw},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query InternetGateway.InternetGatewayId --output text)
   
-  aws ec2 attach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
+  aws ec2 attach-internet-gateway --region us-east-1 --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
   echo $IGW_ID
-----------------------------------------------
-  Step 4: Create the 3 route tables
-  PUB_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-public-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
+
+  ---------------------------------------------------
+
+  4. Route tables (public, app, db)
+
+  PUB_RT=$(aws ec2 create-route-table --region us-east-1 --vpc-id $VPC_ID \
+    --tag-specifications "ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-public-rt},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query RouteTable.RouteTableId --output text)
   
-  APP_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-app-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
+  APP_RT=$(aws ec2 create-route-table --region us-east-1 --vpc-id $VPC_ID \
+    --tag-specifications "ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-app-rt},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query RouteTable.RouteTableId --output text)
   
-  DB_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-db-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
+  DB_RT=$(aws ec2 create-route-table --region us-east-1 --vpc-id $VPC_ID \
+    --tag-specifications "ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-db-rt},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
+    --query RouteTable.RouteTableId --output text)
   
   echo $PUB_RT $APP_RT $DB_RT
 
-  Step 4: Create the 3 route tables
-  PUB_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-public-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
-  
-  APP_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-app-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
-  
-  DB_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID \
-    --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-db-rt}]' \
-    --query 'RouteTable.RouteTableId' --output text)
-  
-  echo $PUB_RT $APP_RT $DB_RT
-  -----------------------------------------------------------
-  Step 5: Add the internet route to the public route table only
-  aws ec2 create-route --route-table-id $PUB_RT \
+  --------------------------------------
+  5. Internet route (public route table only)
+  aws ec2 create-route --region us-east-1 --route-table-id $PUB_RT \
   --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID
-  The app and db route tables keep only the local route
-  ---------------------------------------
-  Step 6: Associate subnets with route tables
+  -------------------------------------
+  6. Associate subnets with route tables
 
-# Public subnets -> public RT
-aws ec2 associate-route-table --route-table-id $PUB_RT --subnet-id $PUB1
-aws ec2 associate-route-table --route-table-id $PUB_RT --subnet-id $PUB2
 
-# App subnets -> app RT
-aws ec2 associate-route-table --route-table-id $APP_RT --subnet-id $APP1
-aws ec2 associate-route-table --route-table-id $APP_RT --subnet-id $APP2
+  aws ec2 associate-route-table --region us-east-1 --route-table-id $PUB_RT --subnet-id $PUB1
+aws ec2 associate-route-table --region us-east-1 --route-table-id $PUB_RT --subnet-id $PUB2
 
-# DB subnets -> db RT
-aws ec2 associate-route-table --route-table-id $DB_RT --subnet-id $DB1
-aws ec2 associate-route-table --route-table-id $DB_RT --subnet-id $DB2
+aws ec2 associate-route-table --region us-east-1 --route-table-id $APP_RT --subnet-id $APP1
+aws ec2 associate-route-table --region us-east-1 --route-table-id $APP_RT --subnet-id $APP2
 
-----------------------------------
+aws ec2 associate-route-table --region us-east-1 --route-table-id $DB_RT --subnet-id $DB1
+aws ec2 associate-route-table --region us-east-1 --route-table-id $DB_RT --subnet-id $DB2
+
+--------------------------------
