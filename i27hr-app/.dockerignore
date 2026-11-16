@@ -1,0 +1,27 @@
+# Applies to the build context when building the root Dockerfile from the repo root.
+# Keeps the context small and makes sure nothing secret-shaped ever reaches a build layer.
+
+.git
+.gitignore
+
+**/node_modules
+frontend/dist
+frontend/.env.local
+
+backend/target
+backend/data
+backend/.env.local
+backend/.env
+
+docker/data
+
+design_handoff_i27corehr_portal
+database
+
+*.md
+credentials.txt
+local-run-steps.md
+
+.idea
+.vscode
+*.log

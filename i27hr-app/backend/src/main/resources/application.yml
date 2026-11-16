@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: i27corehr-backend
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:i27corehr}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-this-dev-only-secret-key-please-override-in-prod-min-32-bytes}
+    expiration-ms: ${JWT_EXPIRATION_MS:28800000}
+    remember-expiration-ms: ${JWT_REMEMBER_EXPIRATION_MS:1209600000}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  documents:
+    storage-type: ${DOCUMENT_STORAGE_TYPE:local}
+    local-path: ${DOCUMENT_LOCAL_PATH:./data/documents}
+    s3-bucket: ${DOCUMENT_S3_BUCKET:}
+    s3-region: ${DOCUMENT_S3_REGION:}
+  seed:
+    enabled: ${SEED_DEMO_DATA:true}
+    default-password: ${SEED_DEFAULT_PASSWORD:Passw0rd!}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.i27academy.i27corehr: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"

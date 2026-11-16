@@ -1,0 +1,2 @@
+This .txt file is for a negative test. The upload should reject it:
+only PDF, DOCX and PNG are allowed.
