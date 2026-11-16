@@ -17,30 +17,30 @@ PUB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
   
-  PUB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.2.0/24 --availability-zone us-east-1b \
+PUB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.2.0/24 --availability-zone us-east-1b \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-public-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
   
-  APP1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.11.0/24 --availability-zone us-east-1a \
+APP1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.11.0/24 --availability-zone us-east-1a \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
   
-  APP2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.12.0/24 --availability-zone us-east-1b \
+APP2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.12.0/24 --availability-zone us-east-1b \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-app-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
-  
-  DB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.21.0/24 --availability-zone us-east-1a \
+
+DB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.21.0/24 --availability-zone us-east-1a \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-1},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
   
-  DB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.22.0/24 --availability-zone us-east-1b \
+DB2=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10.0.22.0/24 --availability-zone us-east-1b \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=i27corehr-db-subnet-2},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
     --query Subnet.SubnetId --output text)
   
-  echo $PUB1 $PUB2 $APP1 $APP2 $DB1 $DB2
+echo $PUB1 $PUB2 $APP1 $APP2 $DB1 $DB2
 
   --------------------------------------------------
-  3. Internet gateway (create and attach)
+3. Internet gateway (create and attach)
 
   IGW_ID=$(aws ec2 create-internet-gateway --region us-east-1 \
     --tag-specifications "ResourceType=internet-gateway,Tags=[{Key=Name,Value=i27corehr-igw},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
@@ -50,8 +50,7 @@ PUB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10
   echo $IGW_ID
 
   ---------------------------------------------------
-
-  4. Route tables (public, app, db)
+4. Route tables (public, app, db)
 
   PUB_RT=$(aws ec2 create-route-table --region us-east-1 --vpc-id $VPC_ID \
     --tag-specifications "ResourceType=route-table,Tags=[{Key=Name,Value=i27corehr-public-rt},{Key=Project,Value=i27corehr},{Key=Environment,Value=dev}]" \
@@ -68,14 +67,14 @@ PUB1=$(aws ec2 create-subnet --region us-east-1 --vpc-id $VPC_ID --cidr-block 10
   echo $PUB_RT $APP_RT $DB_RT
 
   --------------------------------------
-  5. Internet route (public route table only)
+5. Internet route (public route table only)
+
   aws ec2 create-route --region us-east-1 --route-table-id $PUB_RT \
   --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID
   -------------------------------------
-  6. Associate subnets with route tables
+6. Associate subnets with route tables
 
-
-  aws ec2 associate-route-table --region us-east-1 --route-table-id $PUB_RT --subnet-id $PUB1
+aws ec2 associate-route-table --region us-east-1 --route-table-id $PUB_RT --subnet-id $PUB1
 aws ec2 associate-route-table --region us-east-1 --route-table-id $PUB_RT --subnet-id $PUB2
 
 aws ec2 associate-route-table --region us-east-1 --route-table-id $APP_RT --subnet-id $APP1
